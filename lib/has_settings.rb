@@ -8,7 +8,15 @@ module HasSettings  #:nodoc:
     
     module ClassMethods
       ##
+      # Designates the class it is called on as a settings model. Parameters are:
       #
+      # * +name+: global settings attribute name.
+      #   If omitted, the value of <tt>:global_settings_attribute_name</tt> configuration parameter will be used.
+      #   The default value is +:global+ (from plugin's <tt>config[:global_settings_attribute_name]</tt>).
+      #
+      #     class Setting < ActiveRecord::Base
+      #       acts_as_setting :general
+      #     end
       #
       def acts_as_setting(*args)
         options = args.extract_options!
@@ -31,7 +39,30 @@ module HasSettings  #:nodoc:
       end
 
       ##
+      # Gives the class it is called on an attribute that maps to a settings.
+      # The attribute returns HasSettings::ActiveRecordExtensions::SettingsAccessor proxy object that handles settings management.
+      # The options are:
       #
+      # * +name+: settings attribute name.
+      #   If not specified, defaults to +:settings+ (from plugin's <tt>config[:settings_attribute_name]</tt>).
+      # * +:inherit+: controls settings inheritance. Can be given a class of global setting model, or the name of associated class.
+      #   If the associated class has settings attribute name that is different from default, the custom association can be
+      #   passed as an Array. If omitted, settings are not inherited and are private to the model.
+      #
+      #     class Setting < ActiveRecord::Base
+      #       acts_as_setting :general
+      #     end
+      #
+      #     class Group < ActiveRecord::Base
+      #       has_many :users
+      #       has_settings :settings, :inherit => [Setting, :general]   # because Setting has custom attribute name
+      #     end
+      #
+      #     class User < ActiveRecord::Base
+      #       belongs_to :group
+      #       has_settings :settings, :inherit => :group
+      #       has_settings :same_settings, :inherit => [:group, :settings]   # the same as above, different name
+      #     end
       #
       def has_settings(*args)
         options = args.extract_options!
@@ -61,9 +92,9 @@ module HasSettings  #:nodoc:
       ##
       # Initialize new accessor proxy
       #
-      # +owner+ - owner of the setting accessor proxy
-      # +association+ - setting assoc attribute name in the owner's class
-      # +heritage+ - inherited settings proxy, can be either a class of top-level setting model, symbol or array.
+      # * +owner+: owner of the setting accessor proxy
+      # * +association+: setting assoc attribute name in the owner's class
+      # * +heritage+: inherited settings proxy, can be either a class of top-level setting model, symbol or array.
       #
       def initialize(owner, association, heritage)
         @owner = owner
@@ -85,7 +116,7 @@ module HasSettings  #:nodoc:
       
       ##
       # Test if setting +symbol_or_name+ has value. If +include_inherited+ is set to false, only settings defined
-      # for the receiver will be checked, inheritance is ignored.
+      # for the receiver will be checked, ignoring inheritance.
       #
       def has_setting?(symbol_or_name, include_inherited = true)
         found = find_setting(symbol_or_name.to_s) != nil
@@ -99,7 +130,7 @@ module HasSettings  #:nodoc:
       
       ##
       # Returns all defined setting as a Hash. If +include_inherited+ is set to false, only settings defined
-      # for the receiver will be returned, inheritance is ignored.
+      # for the receiver will be returned, ignoring inheritance.
       #
       def all(include_inherited = true)
         hash = {}

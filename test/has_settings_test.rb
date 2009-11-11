@@ -9,17 +9,17 @@ require File.dirname(__FILE__) + '/../init'
 ActiveRecord::Base.logger = Logger.new('test.log')
 ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":memory:")
 
-class Setting < ActiveRecord::Base
+class Setting < ActiveRecord::Base  #:nodoc:
   acts_as_setting
 end
 
-class Group < ActiveRecord::Base
+class Group < ActiveRecord::Base  #:nodoc:
   has_many :users
   has_settings                   :inherit => Setting
   has_settings :custom_settings, :inherit => [Setting, :global]
 end
 
-class User < ActiveRecord::Base
+class User < ActiveRecord::Base  #:nodoc:
   belongs_to :group
   has_settings :private_settings
   has_settings                         :inherit => :group
@@ -27,7 +27,7 @@ class User < ActiveRecord::Base
   has_settings :group_custom_settings, :inherit => [:group, :custom_settings]
 end
 
-class SettingTest < Test::Unit::TestCase
+class SettingTest < Test::Unit::TestCase  #:nodoc:
 
   def setup
     ActiveRecord::Schema.suppress_messages do
