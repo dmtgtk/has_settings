@@ -1,6 +1,8 @@
 HasSettings
 ===========
 
+(TODO)
+
 Settings table structure
 
   create_table :settings do |t|
