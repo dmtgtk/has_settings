@@ -1,2 +1,52 @@
 HasSettings
 ===========
+
+Settings table structure
+
+  create_table :settings do |t|
+    t.integer :configurable_id
+    t.string  :configurable_type
+    t.string  :name, :limit => 40, :null => false
+    t.string  :value
+    t.string  :value_type
+  end
+  
+Settings model
+  
+  class Setting < ActiveRecord::Base
+    acts_as_setting
+  end
+
+Group model, inherits global settings from Setting
+
+  class Group < ActiveRecord::Base
+    has_many :users
+    has_settings :settings, :inherit => Setting
+  end
+
+And User, inheriting from Group
+
+  class User < ActiveRecord::Base
+    belongs_to :group
+    has_settings :settings, :inherit => :group
+  end
+
+Usage
+
+  # set global message
+  Setting.global.message = 'dear aunt'
+  Setting.global.message
+  # => 'dear aunt'
+
+  # user inherits from global settings
+  user.message
+  # => 'dear aunt'
+  
+  # override user's message
+  user.message = 'so double the killer'
+  user.message
+  # => 'so double the killer'
+  
+  # and delete user's message, global setting is active again
+  user.message = nil
+  # => 'dear aunt'
