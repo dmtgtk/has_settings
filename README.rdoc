@@ -1,5 +1,4 @@
-HasSettings
-===========
+= HasSettings
 
 (TODO)
 
@@ -52,3 +51,5 @@ Usage
   # and delete user's message, global setting is active again
   user.message = nil
   # => 'dear aunt'
+
+Copyright (c) 2009 Dmitri Goutnik, released under the MIT license
