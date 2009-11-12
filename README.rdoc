@@ -1,8 +1,31 @@
 = HasSettings
 
-(TODO)
+This plugin allows attaching arbitrary set of attributes to a model, with inheritance.
+It is modeled after OpenStruct, for example:
 
-Settings table structure
+  user = User.create
+  user.settings.language = 'en'
+  user.settings.site_theme = 'green'
+  user.settings.is_sidebar_hidden = true
+  
+etc.
+
+== Installation
+
+  script/plugin install git://github.com/invisiblellama/has_settings.git
+  
+== Basic usage
+
+Suppose you have global application-wide set of preferences and you want to be able to override
+some of these preferences for selected users or user groups.
+
+====1. Define a Setting model:
+
+  class Setting < ActiveRecord::Base
+    acts_as_setting
+  end
+  
+The structure of +settings+ table is as follows:
 
   create_table :settings do |t|
     t.integer :configurable_id
@@ -11,13 +34,19 @@ Settings table structure
     t.string  :value
     t.string  :value_type
   end
-  
-Settings model
-  
-  class Setting < ActiveRecord::Base
-    acts_as_setting
-  end
 
+This gives you access to global settings store:
+
+    Setting.global.some_setting = 42
+    Setting.global.some_other_setting = true
+
++global+ is the default name of global settings accessor added by +acts_as_setting+ to model,
+you can give it different name by passing parameter to +acts_as_setting+, f.i.:
+  
+    acts_as_setting :general
+
+====2. Add settings to Group and User models:
+  
 Group model, inherits global settings from Setting
 
   class Group < ActiveRecord::Base
@@ -25,31 +54,65 @@ Group model, inherits global settings from Setting
     has_settings :settings, :inherit => Setting
   end
 
-And User, inheriting from Group
+User, inheriting from Group
 
   class User < ActiveRecord::Base
     belongs_to :group
     has_settings :settings, :inherit => :group
   end
 
-Usage
+=== Examples
 
-  # set global message
-  Setting.global.message = 'dear aunt'
-  Setting.global.message
-  # => 'dear aunt'
+  # set global 'site_theme'
+  Setting.global.site_theme = 'default'
+  Setting.global.site_theme
+  # => 'default'
 
-  # user inherits from global settings
-  user.message
-  # => 'dear aunt'
+  # Group doesn't have 'site_theme' but it inherits from global settings, so
+  group.settings.site_theme
+  # => 'default'
   
-  # override user's message
-  user.message = 'so double the killer'
-  user.message
-  # => 'so double the killer'
+  # so does User
+  user.settings.site_theme
+  # => 'default'
   
-  # and delete user's message, global setting is active again
-  user.message = nil
-  # => 'dear aunt'
+  # override 'site_theme' for the Group
+  group.settings.site_theme = 'green'
+  group.settings.site_theme
+  # => 'green'
+  # User inherits from the Group, so
+  user.settings.site_theme
+  # => 'green'
+  
+  # set 'site_theme' to nil to delete it
+  group.settings.site_theme = nil
+  # now both User and Group see global setting again
+  user.settings.site_theme
+  # => 'default'
+  group.settings.site_theme
+  # => 'default'
+  
+=== Interface
 
-Copyright (c) 2009 Dmitri Goutnik, released under the MIT license
+At this point, the interface is minimal. Assigning value to (almost arbitrary) named attribute will create named setting, assigning +nil+ will delete it.
+Only simple types are supported:
+
+  * boolean values (TrueClass, FalseClass)
+  * String
+  * Float
+  * Fixnum and Bignum
+  * Time, Date, DateTime and ActiveSupport::TimeWithZone
+
+Additionally, +settings+ proxy provides two public methods:
+
+  has_setting?(symbol_or_name, include_inherited = true)
+  
+will check if setting +symbol_or_name+ is defined for the settings owner, and
+
+  all(include_inherited = true)
+  
+will return all defined settings as a Hash. If +include_inherited+ is set to false, only settings defined
+for the receiver will be checked and inheritance ignored.
+
+---
+Copyright (c) 2009 Dmitri Goutnik, released under the MIT license.
