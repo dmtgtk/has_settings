@@ -1,4 +1,4 @@
-= HasSettings
+= has_settings
 
 This plugin allows attaching arbitrary set of attributes to a model, with inheritance.
 It is modeled after OpenStruct, for example:
