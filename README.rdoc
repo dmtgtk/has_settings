@@ -97,11 +97,11 @@ User, inheriting from Group
 At this point, the interface is minimal. Assigning value to (almost arbitrary) named attribute will create named setting, assigning +nil+ will delete it.
 Only simple types are supported:
 
-  * boolean values (TrueClass, FalseClass)
-  * String
-  * Float
-  * Fixnum and Bignum
-  * Time, Date, DateTime and ActiveSupport::TimeWithZone
+* boolean values (TrueClass, FalseClass)
+* String
+* Float
+* Fixnum and Bignum
+* Time, Date, DateTime and ActiveSupport::TimeWithZone
 
 Additionally, +settings+ proxy provides two public methods:
 
