@@ -86,8 +86,8 @@ module HasSettings  #:nodoc:
     #
     class SettingsAccessor
       
-      # Start with a blank slate
-      instance_methods.each { |m| undef_method m unless m.to_s =~ /(^__|inspect)/}
+      # Start with (almost) blank slate
+      instance_methods.each { |m| undef_method m unless m.to_s =~ /(^__|send|inspect)/}
       
       ##
       # Initialize new accessor proxy
@@ -146,27 +146,16 @@ module HasSettings  #:nodoc:
         hash
       end
 
-      private
-      
-      def method_missing(symbol, *args)
-        name = symbol.to_s
-        if name =~ /=$/
-          put_setting(name.gsub(/=$/, ''), args.first)
-        else
-          get_setting(name)
-        end
-      end
-      
-      def put_setting(name, value)
-        setting = find_setting(name)
+      def set(symbol_or_name, value)
+        setting = find_setting(symbol_or_name)
         if value.nil?
           setting.delete if setting
         else
           if setting.nil?
             if @owner.respond_to?(:new_record?) && @owner.new_record?
-              setting = @association.build(:name => name, :value => value)
+              setting = @association.build(:name => symbol_or_name.to_s, :value => value)
             else
-              setting = @association.create(:name => name, :value => value)
+              setting = @association.create(:name => symbol_or_name.to_s, :value => value)
             end
           else
             setting.update_attributes(:value => value)
@@ -174,17 +163,28 @@ module HasSettings  #:nodoc:
         end
       end
       
-      def get_setting(name)
-        setting = find_setting(name).try(:value)
+      def get(symbol_or_name)
+        setting = find_setting(symbol_or_name).try(:value)
         if setting.nil? && has_parent?
-          return parent.__send__(:get_setting, name)
+          return parent.__send__(:get, symbol_or_name)
         else
           return setting
         end
       end
 
-      def find_setting(name)
-        @association.first(:conditions => ['name = ?', name])
+      private
+      
+      def method_missing(symbol, *args)
+        name = symbol.to_s
+        if name =~ /=$/
+          set(name.gsub(/=$/, ''), args.first)
+        else
+          get(name)
+        end
+      end
+      
+      def find_setting(symbol_or_name)
+        @association.first(:conditions => ['name = ?', symbol_or_name.to_s])
       end
 
       def has_parent?

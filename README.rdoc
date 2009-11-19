@@ -94,7 +94,7 @@ User, inheriting from Group
   
 === Interface
 
-At this point, the interface is minimal. Assigning value to (almost arbitrary) named attribute will create named setting, assigning +nil+ will delete it.
+The interface is intentionally minimal. Assigning value to (almost arbitrary) named attribute will create named setting, assigning +nil+ will delete it.
 Only simple types are supported:
 
 * boolean values (TrueClass, FalseClass)
@@ -103,16 +103,24 @@ Only simple types are supported:
 * Fixnum and Bignum
 * Time, Date, DateTime and ActiveSupport::TimeWithZone
 
-Additionally, +settings+ proxy provides two public methods:
+Additionally, +settings+ proxy provides a few public methods:
 
   has_setting?(symbol_or_name, include_inherited = true)
   
-will check if setting +symbol_or_name+ is defined for the settings owner, and
+will check if setting +symbol_or_name+ is defined for the settings owner;
 
   all(include_inherited = true)
   
 will return all defined settings as a Hash. If +include_inherited+ is set to false, only settings defined
-for the receiver will be checked and inheritance ignored.
+for the receiver will be checked and inheritance ignored; and the pair of methods
 
+  get(symbol_or_name)
+  set(symbol_or_name, value)
+
+can be used instead of attribute access in situation when setting names are dynamic (e.g loading settings from YAML):
+
+  group.settings.get('site_theme')              # same as group.settings.site_theme
+  group.settings.set(:site_theme, 'ponies')     # same as group.settings.site_theme = 'ponies'
+  
 ---
 Copyright (c) 2009 Dmitri Goutnik, released under the MIT license.
