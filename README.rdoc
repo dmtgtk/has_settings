@@ -112,15 +112,12 @@ will check if setting +symbol_or_name+ is defined for the settings owner;
   all(include_inherited = true)
   
 will return all defined settings as a Hash. If +include_inherited+ is set to false, only settings defined
-for the receiver will be checked and inheritance ignored; and the pair of methods
+for the receiver will be checked and inheritance ignored.
 
-  get(symbol_or_name)
-  set(symbol_or_name, value)
+And finally, key-value syntax is also supported:
 
-can be used instead of attribute access in situation when setting names are dynamic (e.g loading settings from YAML):
-
-  group.settings.get('site_theme')              # same as group.settings.site_theme
-  group.settings.set(:site_theme, 'ponies')     # same as group.settings.site_theme = 'ponies'
+  group.settings['site_theme']              # same as group.settings.site_theme
+  group.settings[:site_theme] = 'ponies'    # same as group.settings.site_theme = 'ponies'
   
 ---
 Copyright (c) 2009 Dmitri Goutnik, released under the MIT license.

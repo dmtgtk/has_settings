@@ -151,10 +151,10 @@ class SettingTest < Test::Unit::TestCase  #:nodoc:
     assert(g.has_key? :s2)
     assert_equal(Fixnum, g[:s2].class)
     assert_equal(42, g[:s2])
-    assert_equal(Setting.global.s1, Setting.global.get('s1'))
-    assert_equal(Setting.global.s1, Setting.global.get(:s1))
-    assert_equal(Setting.global.s2, Setting.global.get('s2'))
-    assert_equal(Setting.global.s2, Setting.global.get(:s2))
+    assert_equal(Setting.global.s1, Setting.global['s1'])
+    assert_equal(Setting.global.s1, Setting.global[:s1])
+    assert_equal(Setting.global.s2, Setting.global['s2'])
+    assert_equal(Setting.global.s2, Setting.global[:s2])
   end
   
   def test_global_settings_delete
@@ -258,12 +258,12 @@ class SettingTest < Test::Unit::TestCase  #:nodoc:
     assert_equal(now, user.settings.s2)
     
     # with accessor methods
-    user.settings.set(:some_num, 123)
-    user.settings.set('some_bool', true)
+    user.settings[:some_num] = 123
+    user.settings['some_bool'] = true
     assert_equal(user.settings.some_num, 123)
-    assert_equal(user.settings.some_num, user.settings.get('some_num'))
-    assert_equal(user.settings.get('some_bool'), true)
-    assert_equal(user.settings.some_bool, user.settings.get(:some_bool))
+    assert_equal(user.settings.some_num, user.settings['some_num'])
+    assert_equal(user.settings['some_bool'], true)
+    assert_equal(user.settings.some_bool, user.settings[:some_bool])
 
     # same settings, but different accessor without inheritance
     user.private_settings.one = 1
@@ -277,7 +277,7 @@ class SettingTest < Test::Unit::TestCase  #:nodoc:
     assert_equal('double the killer', user.private_settings.s1)
     
     # delete :now
-    user.private_settings.set(:now, nil)
+    user.private_settings[:now] = nil
     assert_equal(6, user.settings.all.size)
     assert_equal(nil, user.settings.now)
     assert_equal(false, user.settings.has_setting?(:now))

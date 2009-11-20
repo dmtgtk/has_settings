@@ -146,7 +146,24 @@ module HasSettings  #:nodoc:
         hash
       end
 
-      def set(symbol_or_name, value)
+      ##
+      # Retrieve the value of +symbol_or_name+ setting.
+      # If not found, retuns +nil+.
+      #
+      def [](symbol_or_name)
+        setting = find_setting(symbol_or_name).try(:value)
+        if setting.nil? && has_parent?
+          return parent.__send__(:[], symbol_or_name)
+        else
+          return setting
+        end
+      end
+
+      ##
+      # Store the +value+ for setting +symbol_or_name+.
+      # If +value+ is +nil+, setting is deleted.
+      #
+      def []=(symbol_or_name, value)
         setting = find_setting(symbol_or_name)
         if value.nil?
           setting.delete if setting
@@ -163,23 +180,14 @@ module HasSettings  #:nodoc:
         end
       end
       
-      def get(symbol_or_name)
-        setting = find_setting(symbol_or_name).try(:value)
-        if setting.nil? && has_parent?
-          return parent.__send__(:get, symbol_or_name)
-        else
-          return setting
-        end
-      end
-
       private
       
       def method_missing(symbol, *args)
         name = symbol.to_s
         if name =~ /=$/
-          set(name.gsub(/=$/, ''), args.first)
+          self[name.gsub(/=$/, '')] = args.first
         else
-          get(name)
+          self[name]
         end
       end
       
